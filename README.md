@@ -46,9 +46,10 @@ Replace the values with your actual Firebase configuration.
 1.  Clone the repository:
   
     `git clone https://github.com/SiripongPadkhuntod/Helpdesk.git`
+    
     `cd Helpdesk` 
     
-2.  Install dependencies:
+3.  Install dependencies:
     
     `npm install` or
     ` yarn install`
