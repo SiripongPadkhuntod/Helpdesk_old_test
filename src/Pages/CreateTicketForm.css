@@ -1,0 +1,46 @@
+/* src/components/ticket/CreateTicketForm.css */
+.create-ticket-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .create-ticket-form h2 {
+    margin-bottom: 20px;
+  }
+  
+  .create-ticket-form form {
+    display: grid;
+    gap: 15px;
+  }
+  
+  .create-ticket-form label {
+    font-weight: bold;
+  }
+  
+  .create-ticket-form input,
+  .create-ticket-form textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    /* border: 1px solid #ccc; */
+    border-radius: 4px;
+  }
+  
+  .create-ticket-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .create-ticket-form button:hover {
+    background-color: #0056b3;
+  }
+  
