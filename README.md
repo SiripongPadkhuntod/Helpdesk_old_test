@@ -50,7 +50,7 @@ Replace the values with your actual Firebase configuration.
     
 2.  Install dependencies:
     
-    `npm install`
+    `npm install` or
     ` yarn install`
     
 
@@ -58,11 +58,7 @@ Replace the values with your actual Firebase configuration.
 
 1.  Start the development server:
     
-    bash
-    
-    Copy code
-    
-    ```npm run dev ```
+    ```npm run dev ``` or
 	  ```  yarn dev ```
     
 2.  Open your browser and navigate to `http://localhost:5173` to see the application in action.
