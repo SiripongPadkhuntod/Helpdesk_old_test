@@ -1,6 +1,6 @@
 import { getAuth } from "firebase/auth";
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, updateDoc, doc, serverTimestamp, query, orderBy, onSnapshot, getDocs, limit } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, updateDoc, doc, serverTimestamp, query, orderBy, onSnapshot, getDocs, limit,where } from 'firebase/firestore';
 
 
 
@@ -30,4 +30,4 @@ const db = getFirestore(app);
 
 // Export auth so it can be imported in other files
 
-export { auth, db, collection, addDoc, updateDoc, doc, serverTimestamp, query, orderBy,  onSnapshot, getDocs,limit};
+export { auth, db, collection, addDoc, updateDoc, doc, serverTimestamp, query, orderBy,  onSnapshot, getDocs,limit,where};

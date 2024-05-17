@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { db, collection, addDoc, serverTimestamp } from '../Firebase';
+
+import { db, collection, addDoc, serverTimestamp } from '../../Firebase';
 import { Typography, TextField, Button, Grid, Modal, Box } from '@mui/material';
 import './CreateTicketForm.css';
-import { set } from 'firebase/database';
+
 import { Refresh } from '@mui/icons-material';
 
 const CreateTicketForm = ({ onClose }) => {
@@ -11,7 +11,6 @@ const CreateTicketForm = ({ onClose }) => {
   const [description, setDescription] = useState('');
   const [contact, setContact] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();

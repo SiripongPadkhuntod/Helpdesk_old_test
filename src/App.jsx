@@ -2,9 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AuthPage from './Pages/Auth';
 import Dashboard from './Pages/Dashboard';
-import NewTicket from './Pages/CreateNewTicket';
-import Ticket from './Pages/Tickets';
-import ManageTicketsPage from './Pages/ManageTickets';
+import NewTicket from './components/ticket/CreateNewTicket';
+import Ticket from './components/ticket/Tickets';
+import ManageTicketsPage from './components/ticket/ManageTickets';
 
 const App = () => {
   return (

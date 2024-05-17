@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, collection, query, orderBy, onSnapshot } from '../Firebase';
-import '../components/ticket/ticket.css';
+import { db, collection, query, orderBy, onSnapshot } from '../../Firebase';
+// import '../components/ticket/ticket.css';
 import { Container, Typography, Select, MenuItem, Grid } from '@mui/material';
 
 const TicketsPage = () => {
