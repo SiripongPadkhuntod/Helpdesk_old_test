@@ -58,7 +58,7 @@ const CreateTicketForm = ({ onClose }) => {
               variant="outlined"
               fullWidth
               multiline
-              rows={4}
+              rows={5}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required

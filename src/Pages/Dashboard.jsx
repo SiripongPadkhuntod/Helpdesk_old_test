@@ -47,7 +47,7 @@ const Dashboard = () => {
   };
 
   return (
-    <Container>
+    <>
       <Box mt={3} mb={5}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={3}>
@@ -96,7 +96,7 @@ const Dashboard = () => {
           <CreateTicketForm onClose={handleCloseModal} />
         </Box>
       </Modal>
-    </Container>
+    </>
   );
 };
 
