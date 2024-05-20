@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardActions, Typography, IconButton } from '@mui/material';
+import { Card, CardContent, CardActions, Typography, IconButton,Dialog,DialogActions } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
@@ -24,50 +24,55 @@ const formatTimestamp = (timestamp) => {
 
 const CardTicket = ({ ticket, index, handleViewClick, handleEditClick, handleUpdateStatus }) => {
   return (
-    <Draggable key={ticket.id} draggableId={ticket.id} index={index}>
+    
+    <Draggable key={ticket.id} draggableId={ticket.id} index={parseInt(index, 10)}>
+
+
+
       {(provided) => (
-        <StyledCard
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          onClick={() => handleViewClick(ticket)}
-        >
-          <CardContent>
-            <Typography variant="h6" noWrap>{ticket.title}</Typography>
-            <Typography variant="body1" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {ticket.description}
-            </Typography>
-            <Typography variant="body2" noWrap><strong>Status:</strong> {ticket.status}</Typography>
-            <Typography variant="body2" noWrap><strong>Contact:</strong> {ticket.contact}</Typography>
-            <Typography variant="body2" noWrap><strong>Created At:</strong> {formatTimestamp(ticket.createdAt)}</Typography>
-            <Typography variant="body2" noWrap><strong>Updated At:</strong> {formatTimestamp(ticket.updatedAt)}</Typography>
-          </CardContent>
-          <CardActions>
-            <IconButton onClick={(e) => { e.stopPropagation(); handleEditClick(ticket); }} sx={{ marginLeft: 'auto' }}>
-              <EditIcon />
-            </IconButton>
-            <IconButton
-              onClick={(e) => { e.stopPropagation(); handleUpdateStatus(ticket.id, 'accepted'); }}
-              sx={{ color: 'green' }}
-            >
-              <CheckCircleIcon />
-            </IconButton>
-            <IconButton
-              onClick={(e) => { e.stopPropagation(); handleUpdateStatus(ticket.id, 'resolved'); }}
-              sx={{ color: 'blue' }}
-            >
-              <DoneAllIcon />
-            </IconButton>
-            <IconButton
-              onClick={(e) => { e.stopPropagation(); handleUpdateStatus(ticket.id, 'rejected'); }}
-              sx={{ color: 'red' }}
-            >
-              <CancelIcon />
-            </IconButton>
-          </CardActions>
-        </StyledCard>
+        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+          <StyledCard onClick={() => handleViewClick(ticket)}>
+            <CardContent>
+              <Typography variant="h6" noWrap>{ticket.title}</Typography>
+              <Typography variant="body1" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {ticket.description}
+              </Typography>
+              <Typography variant="body2" noWrap><strong>Status:</strong> {ticket.status}</Typography>
+              <Typography variant="body2" noWrap><strong>Contact:</strong> {ticket.contact}</Typography>
+              <Typography variant="body2" noWrap><strong>Created At:</strong> {formatTimestamp(ticket.createdAt)}</Typography>
+              <Typography variant="body2" noWrap><strong>Updated At:</strong> {formatTimestamp(ticket.updatedAt)}</Typography>
+            </CardContent>
+            <CardActions>
+              <IconButton onClick={(e) => { e.stopPropagation(); handleEditClick(ticket); }} sx={{ marginLeft: 'auto' }}>
+                <EditIcon />
+              </IconButton>
+              <IconButton
+                onClick={(e) => { e.stopPropagation(); handleUpdateStatus(ticket.id, 'accepted'); }}
+                sx={{ color: 'green' }}
+              >
+                <CheckCircleIcon />
+              </IconButton>
+              
+              <IconButton
+                onClick={(e) => { e.stopPropagation(); handleUpdateStatus(ticket.id, 'resolved'); }}
+                sx={{ color: 'blue' }}
+              >
+                <DoneAllIcon />
+              </IconButton>
+
+              <IconButton
+                onClick={(e) => { e.stopPropagation(); handleUpdateStatus(ticket.id, 'rejected'); }}
+                sx={{ color: 'red' }}
+              >
+                <CancelIcon />
+              </IconButton>
+            </CardActions>
+          </StyledCard>
+        </div>
       )}
+     
     </Draggable>
+    
   );
 };
 

@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
-
-import { db, collection, addDoc, serverTimestamp } from '../../Firebase';
 import { Typography, TextField, Button, Grid, Modal, Box } from '@mui/material';
 import './CreateTicketForm.css';
-
-import { Refresh } from '@mui/icons-material';
 
 const CreateTicketForm = ({ onClose }) => {
   const [title, setTitle] = useState('');
@@ -20,18 +16,29 @@ const CreateTicketForm = ({ onClose }) => {
       description,
       contact,
       status: 'pending',
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      createdAt: new Date().toISOString(),  // Use ISO string format for timestamps
+      updatedAt: new Date().toISOString(),
     };
 
     try {
-      await addDoc(collection(db, 'tickets'), newTicket);
-      setShowModal(true); // Show the success modal
-      setTimeout(() => {
-        setShowModal(false); // Hide the modal after a few seconds
-        onClose(); // Close the create ticket modal
-        Refresh(); // Refresh the page
-      }, 3000); // Hide after 3 seconds
+      const response = await fetch('http://localhost:7001/addTicket', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTicket),
+      });
+      
+      if (response.ok) {
+        setShowModal(true); // Show the success modal
+        setTimeout(() => {
+          setShowModal(false); // Hide the modal after a few seconds
+          onClose(); // Close the form
+          window.location.reload(); // Refresh the page
+        }, 1000); // Hide after 1 second
+      } else {
+        console.error("Error adding ticket: ", response.statusText);
+      }
     } catch (error) {
       console.error("Error adding ticket: ", error);
     }

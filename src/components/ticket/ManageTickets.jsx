@@ -1,23 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { db, collection, query, orderBy, onSnapshot, updateDoc, doc, serverTimestamp } from '../../Firebase';
-import { Container, Typography, Grid, Box, Paper, Button, IconButton, TextField, Divider, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Select, MenuItem, InputAdornment } from '@mui/material';
-import SearchIcon from "@mui/icons-material/Search";
+import {
+  Container,
+  Typography,
+  Grid,
+  Box,
+  TextField,
+  Divider,
+  Select,
+  MenuItem,
+  InputAdornment,
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/material/styles';
-import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { TicketViewModal, TicketEditModal } from './Modal';
 import CardTicket from './CardTicket';
 
-const KanbanColumn = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.background.default,
+const statusColors = {
+  pending: '#FFEBEE',    // light red
+  accepted: '#E3F2FD',   // light blue
+  resolved: '#E8F5E9',   // light green
+  rejected: '#F3E5F5',   // light purple
+};
+
+const KanbanColumn = styled(Box)(({ theme, status }) => ({
+  backgroundColor: statusColors[status] || theme.palette.background.default,
   padding: theme.spacing(2),
   borderRadius: theme.shape.borderRadius,
   boxShadow: theme.shadows[1],
   minHeight: '400px',
   flex: '1',
-  maxHeight: '700px',
-  overflowY: 'auto',
   marginRight: theme.spacing(2),
   position: 'relative',
+  overflowY: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
 }));
 
 const KanbanHeader = styled(Typography)(({ theme }) => ({
@@ -51,53 +68,52 @@ const ManageTicketsPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
   const [originalTicket, setOriginalTicket] = useState(null);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [statusToUpdate, setStatusToUpdate] = useState(null);
 
   useEffect(() => {
-    const q = query(collection(db, 'tickets'), orderBy(sort, 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const ticketsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setTickets(ticketsData);
-    });
-    return unsubscribe;
-  }, [sort]);
-
-  const filteredTickets = tickets.filter(ticket => {
-    return (filter === 'all' || ticket.status === filter) &&
-      ticket.title.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+    const fetchTickets = async () => {
+      try {
+        const response = await fetch(`http://localhost:7001/tickets?sort=${sort}&filter=${filter}&searchTerm=${searchTerm}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setTickets(data);
+      } catch (error) {
+        console.error('Error fetching tickets: ', error);
+      }
+    };
+    fetchTickets();
+  }, [sort, filter, searchTerm]);
 
   const handleUpdateStatus = async (id, status) => {
     try {
-      const ticketRef = doc(db, 'tickets', id);
-      await updateDoc(ticketRef, {
-        status,
-        updatedAt: serverTimestamp(),
+      await fetch(`http://localhost:7001/updateTicketStatus/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
       });
+      const response = await fetch(`http://localhost:7001/tickets?sort=${sort}&filter=${filter}&searchTerm=${searchTerm}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setTickets(data);
     } catch (error) {
-      console.error("Error updating ticket: ", error);
+      console.error('Error updating ticket: ', error);
     }
   };
 
   const updateTicketDetails = async (id, details) => {
     try {
-      const ticketRef = doc(db, 'tickets', id);
-      await updateDoc(ticketRef, {
-        ...details,
-        updatedAt: serverTimestamp(),
+      await fetch(`http://localhost:7001/updateTicketDetails/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(details),
       });
+      setTickets(tickets.map((ticket) => (ticket.id === id ? { ...ticket, ...details } : ticket)));
     } catch (error) {
-      console.error("Error updating ticket: ", error);
+      console.error('Error updating ticket: ', error);
     }
-  };
-
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp || !timestamp.seconds) return 'N/A';
-    return new Date(timestamp.seconds * 1000).toLocaleString();
   };
 
   const handleViewClick = (ticket) => {
@@ -127,7 +143,7 @@ const ManageTicketsPage = () => {
       updateTicketDetails(currentTicket.id, {
         title: currentTicket.title,
         description: currentTicket.description,
-        contact: currentTicket.contact
+        contact: currentTicket.contact,
       });
       handleCloseEditModal();
     }
@@ -146,44 +162,44 @@ const ManageTicketsPage = () => {
     if (!result.destination) return;
 
     const { source, destination } = result;
-
-    // If the ticket was moved to a different column
     if (source.droppableId !== destination.droppableId) {
-      const ticket = tickets.find(ticket => ticket.id === result.draggableId);
+      const ticket = tickets.find((ticket) => ticket.id === result.draggableId);
       if (ticket) {
         handleUpdateStatus(ticket.id, destination.droppableId);
       }
     }
   };
 
-  const handleCloseConfirmDialog = () => {
-    setIsConfirmDialogOpen(false);
-    setCurrentTicket(null);
-    setStatusToUpdate(null);
-  };
-
   const renderTickets = (status) => {
-    return filteredTickets.filter(ticket => ticket.status === status).map((ticket, index) => (
-      <CardTicket
-        key={ticket.id}
-        ticket={ticket}
-        index={index}
-        handleViewClick={handleViewClick}
-        handleEditClick={handleEditClick}
-        handleUpdateStatus={handleUpdateStatus}
-      />
-    ));
+    return tickets
+      .filter((ticket) => ticket.status === status)
+      .map((ticket, index) => (
+        <Draggable key={ticket.id} draggableId={ticket.id} index={index}>
+          {(provided) => (
+            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+              <CardTicket
+                ticket={ticket}
+                handleViewClick={handleViewClick}
+                handleEditClick={handleEditClick}
+                handleUpdateStatus={handleUpdateStatus}
+              />
+            </div>
+          )}
+        </Draggable>
+      ));
   };
 
   return (
-    <Container maxWidth>
+    <>
       <Grid container spacing={2} alignItems="center" justifyContent="space-between">
         <Grid item>
-          <Typography variant="h4" gutterBottom>Manage Tickets</Typography>
+          <Typography variant="h4" gutterBottom>
+            Manage Tickets
+          </Typography>
         </Grid>
 
         <Grid item xs={6}>
-          <Grid container spacing={2} alignItems="center" justifyContent='flex-end'>
+          <Grid container spacing={2} alignItems="center" justifyContent="flex-end">
             <Grid item>
               <Select value={sort} onChange={(e) => setSort(e.target.value)} fullWidth>
                 <MenuItem value="createdAt">Created Time</MenuItem>
@@ -215,10 +231,10 @@ const ManageTicketsPage = () => {
 
       <DragDropContext onDragEnd={onDragEnd}>
         <ScrollableContainer>
-          {['pending', 'accepted', 'resolved', 'rejected'].map(status => (
+          {['pending', 'accepted', 'resolved', 'rejected'].map((status) => (
             <Droppable key={status} droppableId={status}>
               {(provided) => (
-                <KanbanColumn ref={provided.innerRef} {...provided.droppableProps}>
+                <KanbanColumn ref={provided.innerRef} {...provided.droppableProps} status={status}>
                   <KanbanHeader variant="h6" gutterBottom>
                     {status.charAt(0).toUpperCase() + status.slice(1)}
                   </KanbanHeader>
@@ -231,11 +247,7 @@ const ManageTicketsPage = () => {
         </ScrollableContainer>
       </DragDropContext>
 
-      <TicketViewModal
-        open={isViewModalOpen}
-        onClose={handleCloseViewModal}
-        ticket={currentTicket}
-      />
+      <TicketViewModal open={isViewModalOpen} onClose={handleCloseViewModal} ticket={currentTicket} />
 
       <TicketEditModal
         open={isEditModalOpen}
@@ -245,29 +257,7 @@ const ManageTicketsPage = () => {
         onSave={handleSaveEdit}
         isModified={isModified}
       />
-
-      <Dialog
-        open={isConfirmDialogOpen}
-        onClose={handleCloseConfirmDialog}
-        aria-labelledby="confirm-dialog-title"
-        aria-describedby="confirm-dialog-description"
-      >
-        <DialogTitle id="confirm-dialog-title">Confirm Status Change</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="confirm-dialog-description">
-            Are you sure you want to change the status to "{statusToUpdate}"?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseConfirmDialog} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={() => handleUpdateStatus(currentTicket.id, statusToUpdate)} color="primary" autoFocus>
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+    </>
   );
 };
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
-import { db, collection, query, orderBy, onSnapshot, limit } from '../Firebase';
 import { Container, Typography, Grid, Card, CardContent, Box, Fab, Modal } from '@mui/material';
 import TicketList from '../components/ticket/ManageTickets.jsx';
 import CreateTicketForm from '../components/ticket/CreateNewTicket.jsx';
@@ -16,26 +15,30 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    const q = query(collection(db, 'tickets'), orderBy('updatedAt', 'desc'));
+    const fetchTickets = async () => {
+      try {
+        const response = await fetch('http://localhost:7001/tickets?sort=updatedAt&filter=all&searchTerm=');
+        const data = await response.json();
+        
+        const newStats = {
+          pending: data.filter((ticket) => ticket.status === 'pending').length,
+          accepted: data.filter((ticket) => ticket.status === 'accepted').length,
+          resolved: data.filter((ticket) => ticket.status === 'resolved').length,
+          rejected: data.filter((ticket) => ticket.status === 'rejected').length,
+        };
+        setStats(newStats);
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const tickets = snapshot.docs.map((doc) => doc.data());
-      const newStats = {
-        pending: tickets.filter((ticket) => ticket.status === 'pending').length,
-        accepted: tickets.filter((ticket) => ticket.status === 'accepted').length,
-        resolved: tickets.filter((ticket) => ticket.status === 'resolved').length,
-        rejected: tickets.filter((ticket) => ticket.status === 'rejected').length,
-      };
-      setStats(newStats);
+        const recentTicketsData = data.slice(0, 5).map((ticket) => ({
+          id: ticket.id,
+          ...ticket,
+        }));
+        setRecentTickets(recentTicketsData);
+      } catch (error) {
+        console.error("Error fetching tickets: ", error);
+      }
+    };
 
-      const recentTicketsData = snapshot.docs.slice(0, 5).map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setRecentTickets(recentTicketsData);
-    });
-
-    return () => unsubscribe();
+    fetchTickets();
   }, []);
 
   const handleOpenModal = () => {
@@ -47,7 +50,7 @@ const Dashboard = () => {
   };
 
   return (
-    <>
+    <Container maxWidth="xl">
       <Box mt={3} mb={5}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={3}>
@@ -96,7 +99,7 @@ const Dashboard = () => {
           <CreateTicketForm onClose={handleCloseModal} />
         </Box>
       </Modal>
-    </>
+    </Container>
   );
 };
 
